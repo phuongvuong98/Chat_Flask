@@ -6,6 +6,9 @@ import ssl
 import bcrypt
 import pymongo
 
+from bson.json_util import dumps
+from datetime import datetime
+
 
 class Database:
     def __init__(self):
@@ -20,11 +23,8 @@ class Database:
         self.message = db.message
 
     def create_user(self, username, passwd):
-        if re.match("^[a-zA-Z0-9_.]+$", username) == False:
-            return "Invalid username"
-
-        if re.match("^[a-zA-Z0-9_. ]+$", passwd) == False:
-            return "Invalid password"
+        if validate_string(username) == False or validate_string(passwd) == False:
+            return "Invalid username or password"
 
         if self.user.count_documents({'username': username}, limit=1) != 0:
             return "user already exists"
@@ -43,11 +43,8 @@ class Database:
         return "Success"
 
     def check_valid_cred(self, username, passwd):
-        if re.match("^[a-zA-Z0-9_.]+$", username) == False:
-            return "Invalid username"
-
-        if re.match("^[a-zA-Z0-9_. ]+$", passwd) == False:
-            return "Invalid password"
+        if validate_string(username) == False or validate_string(passwd) == False:
+            return "Invalid username or password"
 
         user = self.user.find_one({
             "username": username,
@@ -61,6 +58,37 @@ class Database:
 
         return "Error has occurred"
 
+    def list_user(self):
+        return dumps(self.user.find({}, {"username": 1, "_id": 0}))
+
+    def show_conversation(self, sender, receiver):
+        if validate_string(sender) == False or validate_string(receiver) == False:
+            return "Error has occurred"
+
+        party = {
+            "sender": sender,
+            "receiver": receiver,
+        }
+
+        conversation = self.message.find(party)
+
+        return dumps(conversation)
+
+    def add_message(self, sender, receiver, content):
+        conversation = {
+            "sender": sender,
+            "receiver": receiver,
+            "content": content,
+            "inserted_at": datetime.utcnow(),
+        }
+
+        result = self.message.insert_one(conversation)
+
+        if result.inserted_id == None:
+            return "Error has occurred"
+
+        return "Success"
+
 
 def get_hashed_password(plain_text_password):
     return bcrypt.hashpw(plain_text_password, bcrypt.gensalt(12))
@@ -68,3 +96,7 @@ def get_hashed_password(plain_text_password):
 
 def check_password(plain_text_password, hashed_password):
     return bcrypt.checkpw(plain_text_password, hashed_password)
+
+
+def validate_string(str):
+    return re.match("^[a-zA-Z0-9_.]+$", str)

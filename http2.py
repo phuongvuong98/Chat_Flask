@@ -25,6 +25,7 @@ async def ws():
 
 
 @app.route('/signup', methods=['POST'])
+@route_cors(allow_origin="*")
 async def signup():
     data = await request.get_json()
     username = data['username']
@@ -41,6 +42,7 @@ async def signup():
 
 
 @app.route('/login', methods=['POST'])
+@route_cors(allow_origin="*")
 async def login():
     data = await request.get_json()
     username = data['username']
@@ -54,6 +56,55 @@ async def login():
         return json.dumps({"status": "success"})
     else:
         return Response(json.dumps({"error": result}), 404)
+
+
+@app.route('/users', methods=['GET'])
+@route_cors(allow_origin="*")
+async def list_user():
+    data = await request.get_json()
+    print(request.headers['Host'])
+    username = data['username']
+    passwd = data['password']
+
+    database = db.Database()
+
+    result = database.list_user()
+
+    return json.dumps({"data": result})
+
+
+@app.route('/conversation', methods=['GET'])
+@route_cors(allow_origin="*")
+async def get_conversation():
+    data = await request.get_json()
+    print(request.headers['Authorization'])
+    # party = data['party']
+
+    database = db.Database()
+
+    result = database.show_conversation("l1uan", "luan")
+
+    return json.dumps({"data": result})
+
+
+@app.route('/chat', methods=['POST'])
+@route_cors(allow_origin="*")
+async def send_message():
+    data = await request.get_json()
+    print(request.headers['Authorization'])
+    # party = data['party']
+
+    receiver = data['receiver']
+    content = data['content']
+
+    database = db.Database()
+
+    result = database.add_message("luan", receiver, content)
+
+    if result == "Success":
+        return json.dumps({"status": "success"})
+
+    return Response(json.dumps({"error": result}), 500)
 
 
 @app.cli.command('run')
