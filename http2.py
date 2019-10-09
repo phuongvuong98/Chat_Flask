@@ -63,8 +63,6 @@ async def login():
 async def list_user():
     data = await request.get_json()
     print(request.headers['Host'])
-    username = data['username']
-    passwd = data['password']
 
     database = db.Database()
 
