@@ -1,3 +1,4 @@
 {
-    "python.pythonPath": "/Users/luan/Downloads/quart-master-examples-http2/examples/http2/venv/bin/python3"
+    "python.pythonPath": "/Users/luan/Downloads/quart-master-examples-http2/examples/http2/venv/bin/python3",
+    "python.formatting.autopep8Path": "/Users/luan/Downloads/quart-master-examples-http2/examples/http2/venv/bin/autopep8",
 }
