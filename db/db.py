@@ -71,16 +71,16 @@ class Database:
             "receiver": receiver,
         }
 
-        conversation = self.message.find(party)
+        conversation = self.message.find(party, {"_id": 0})
 
-        return dumps(conversation)
+        return list(conversation)
 
     def add_message(self, sender, receiver, content):
         conversation = {
             "sender": sender,
             "receiver": receiver,
             "content": content,
-            "inserted_at": datetime.utcnow(),
+            "inserted_at": datetime.utcnow().timestamp(),
         }
 
         result = self.message.insert_one(conversation)

@@ -5,21 +5,48 @@ from quart_cors import cors, route_cors, websocket_cors
 from db import db
 import json
 
+from functools import wraps
+import uuid
+
+
 app = Quart(__name__)
+# create a Socket.IO server
 
 
 @app.route('/')
 async def index():
     await make_push_promise(url_for('static', filename='http2.css'))
     await make_push_promise(url_for('static', filename='http2.js'))
-    # return await render_template('index.html')
-    return "haha"
+    return await render_template('index.html')
 
 
-@app.websocket("/")
-@websocket_cors(allow_origin="127.0.0.1:5000/")
+connected = set()
+users = dict()
+
+
+def collect_websocket(func):
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        global connected
+        global users
+        connected.add(websocket._get_current_object())
+        users[id(websocket._get_current_object())
+              ] = websocket._get_current_object()
+        try:
+            return await func(*args, **kwargs)
+        finally:
+            connected.remove(websocket._get_current_object())
+            if id(websocket._get_current_object()) in users:
+                del users[id(websocket._get_current_object())]
+    return wrapper
+
+
+@app.websocket('/ws')
+@collect_websocket
+@websocket_cors(allow_origin='*')
 async def ws():
     while True:
+        print(users)
         data = await websocket.receive()
         await websocket.send(f"echo {data}")
 
@@ -80,7 +107,7 @@ async def get_conversation():
 
     database = db.Database()
 
-    result = database.show_conversation("l1uan", "luan")
+    result = database.show_conversation("luan", "l1uan")
 
     return json.dumps({"data": result})
 

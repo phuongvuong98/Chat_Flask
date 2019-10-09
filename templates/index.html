@@ -5,6 +5,7 @@
   <title>Calculator example</title>
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='http2.css') }}">
   <script type="text/javascript" src="{{ url_for('static', filename='http2.js') }}"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
 </head>
 
 <body>
@@ -19,19 +20,6 @@
     <button id="multiply">Multiply a and b</button>
     <button id="divide">Divide a by b</button>
   </p>
-  <script>
-    let socket = new WebSocket("wss://127.0.0.1:5000/");
-    socket.onopen = function (e) {
-      alert("[open] Connection established");
-      alert("Sending to server");
-      socket.send("My name is John");
-    };
-
-    socket.onmessage = function (event) {
-      alert(`[message] Data received from server: ${event.data}`);
-      console.log(event);
-    };
-  </script>
 </body>
 
 </html>
