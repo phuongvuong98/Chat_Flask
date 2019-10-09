@@ -68,7 +68,7 @@ async def list_user():
 
     result = database.list_user()
 
-    return json.dumps({"data": result})
+    return {"data": result}
 
 
 @app.route('/conversation', methods=['GET'])

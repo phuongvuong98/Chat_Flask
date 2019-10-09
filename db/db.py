@@ -3,6 +3,7 @@ import pprint
 import re
 import ssl
 
+
 import bcrypt
 import pymongo
 
@@ -59,7 +60,7 @@ class Database:
         return "Error has occurred"
 
     def list_user(self):
-        return dumps(self.user.find({}, {"username": 1, "_id": 0}))
+        return list(self.user.find({}, {"username": 1, "_id": 0}))
 
     def show_conversation(self, sender, receiver):
         if validate_string(sender) == False or validate_string(receiver) == False:
