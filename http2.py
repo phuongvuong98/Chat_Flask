@@ -70,7 +70,8 @@ async def ws():
                 if message_json["type"] == "chat":
                     if users.get(message_json['receiver']) != None:
                         receiver_websocket = users[message_json['receiver']]
-                        await receiver_websocket.send(message_json['content'])
+
+                        await receiver_websocket.send(message_json)
 
                     database.add_message(
                         message_json['sender'], message_json['receiver'], message_json['content'])
