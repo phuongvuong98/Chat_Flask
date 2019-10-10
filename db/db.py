@@ -18,15 +18,15 @@ class Singleton(type):
         if cls not in cls._instances:
             cls._instances[cls] = super(
                 Singleton, cls).__call__(*args, **kwargs)
-            print("aa")
             connection = pymongo.MongoClient(
                 "mongodb+srv://3man:Admin123@c0-xeenv.mongodb.net/admin?retryWrites=true&w=majority", ssl=True, ssl_cert_reqs=ssl.CERT_NONE)
-
+            print("Init database connection")
             # creating database
             db = connection.chat
 
             cls.user = db.user
             cls.message = db.message
+            cls.socketsession = db.session
 
         return cls._instances[cls]
 
@@ -71,15 +71,12 @@ class Database(metaclass=Singleton):
     def check_valid_cred(self, username, passwd):
         if validate_string(username) == False or validate_string(passwd) == False:
             return "Invalid username or password"
-
-        try:
-            user = self.user.find_one({
-                "username": username,
-            })
-        except pymongo.errors.AutoReconnect:
-            print("a")
+        user = self.user.find_one({
+            "username": username,
+        })
 
         if user == None:
+            print("isdat")
             return "Error has occurred"
 
         if check_password(passwd.encode('utf-8'), user['passwd']):
@@ -94,13 +91,17 @@ class Database(metaclass=Singleton):
         if validate_string(sender) == False or validate_string(receiver) == False:
             return "Error has occurred"
 
-        party = {
+        party = [{
             "sender": sender,
             "receiver": receiver,
-        }
+        },
+            {
+            "sender": receiver,
+            "receiver": sender,
+        }]
 
         try:
-            conversation = self.message.find(party, {"_id": 0})
+            conversation = self.message.find({"$or": party}, {"_id": 0})
         except:
             print("a")
 
@@ -120,6 +121,32 @@ class Database(metaclass=Singleton):
             return "Error has occurred"
 
         return "Success"
+
+    def update_websocket_id(self, username, websocket_id):
+
+        if self.socketsession.count_documents({'username': username}, limit=1) != 0:
+            # update websocket id if already exists
+            result = self.socketsession.update_one(
+                {"username": username}, {"$set": {"websocket_id": websocket_id}})
+        else:
+            result = self.socketsession.insert_one(
+                {"username": username, "websocket_id": websocket_id})
+
+            if result.inserted_id == None:
+                return "Error has occurred"
+
+        return "Success"
+
+    def get_websocket_id_by_username(self, username):
+
+        result = self.socketsession.find_one({
+            "username": username,
+        })
+
+        if result == None or result.get("websocket_id") == None:
+            return 0
+
+        return result["websocket_id"]
 
 
 def get_hashed_password(plain_text_password):
