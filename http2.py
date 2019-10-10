@@ -71,8 +71,9 @@ async def ws():
                     users[g_user] = websocket._get_current_object()
 
                 if message_json["type"] == "chat":
-                    receiver_websocket = users[message_json['receiver']]
-                    await receiver_websocket.send(message_json['content'])
+                    if users.get(message_json['receiver']) != None:
+                        receiver_websocket = users[message_json['receiver']]
+                        await receiver_websocket.send(message_json['content'])
                     database = db.Database()
 
                     database.add_message(

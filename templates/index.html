@@ -22,13 +22,15 @@
   </p>
 
   <script>
-    let socket = new WebSocket("wss://127.0.0.1:5000/ws?adad=wae&dsa=123/ko");
+    let socket = new WebSocket("wss://127.0.0.1:5000/ws");
 
     socket.onopen = e => {
       maximum = 2;
       minimum = 0;
       da = ["luan", "thuong", "vuong"]
       var randomnumber = Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
+
+
       initMsg = {
         "type": "init",
         "username": da[randomnumber]
