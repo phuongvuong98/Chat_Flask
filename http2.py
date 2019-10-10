@@ -29,6 +29,7 @@ def collect_websocket(func):
     async def wrapper(*args, **kwargs):
         global connected
         global users
+        print(websocket.keys())
         connected.add(websocket._get_current_object())
         users[id(websocket._get_current_object())
               ] = websocket._get_current_object()
@@ -75,7 +76,10 @@ async def login():
     username = data['username']
     passwd = data['password']
 
-    database = db.Database()
+    try:
+        database = db.Database()
+    except Exception as e:
+        print(e)
 
     result = database.check_valid_cred(username, passwd)
 
@@ -105,7 +109,11 @@ async def get_conversation():
     print(request.headers['Authorization'])
     # party = data['party']
 
-    database = db.Database()
+    try:
+        database = db.Database()
+    except Exception as e:
+        print("***********************")
+        print(e)
 
     result = database.show_conversation("luan", "l1uan")
 

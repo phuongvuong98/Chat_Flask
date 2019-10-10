@@ -11,17 +11,39 @@ from bson.json_util import dumps
 from datetime import datetime
 
 
-class Database:
-    def __init__(self):
-        connection = pymongo.MongoClient(
-            "mongodb+srv://3man:Admin123@c0-xeenv.mongodb.net/admin?retryWrites=true&w=majority", ssl=True, ssl_cert_reqs=ssl.CERT_NONE)
+class Singleton(type):
+    _instances = {}
 
-        # creating database
-        db = connection.chat
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(
+                Singleton, cls).__call__(*args, **kwargs)
+            print("aa")
+            connection = pymongo.MongoClient(
+                "mongodb+srv://3man:Admin123@c0-xeenv.mongodb.net/admin?retryWrites=true&w=majority", ssl=True, ssl_cert_reqs=ssl.CERT_NONE)
 
-        # creating document
-        self.user = db.user
-        self.message = db.message
+            # creating database
+            db = connection.chat
+
+            cls.user = db.user
+            cls.message = db.message
+
+        return cls._instances[cls]
+
+
+class Database(metaclass=Singleton):
+    pass
+    # def __init__(self):
+
+    #     connection = pymongo.MongoClient(
+    #         "mongodb+srv://3man:Admin123@c0-xeenv.mongodb.net/admin?retryWrites=true&w=majority", ssl=True, ssl_cert_reqs=ssl.CERT_NONE)
+
+    #     # creating database
+    #     db = connection.chat
+
+    #     # creating document
+    #     self.user = db.user
+    #     self.message = db.message
 
     def create_user(self, username, passwd):
         if validate_string(username) == False or validate_string(passwd) == False:
@@ -36,7 +58,10 @@ class Database:
         }
 
         # inserting new user
-        result = self.user.insert_one(user)
+        try:
+            result = self.user.insert_one(user)
+        except pymongo.errors.AutoReconnect:
+            print("a")
 
         if result.inserted_id == None:
             return "Error has occurred"
@@ -47,9 +72,12 @@ class Database:
         if validate_string(username) == False or validate_string(passwd) == False:
             return "Invalid username or password"
 
-        user = self.user.find_one({
-            "username": username,
-        })
+        try:
+            user = self.user.find_one({
+                "username": username,
+            })
+        except pymongo.errors.AutoReconnect:
+            print("a")
 
         if user == None:
             return "Error has occurred"
@@ -71,7 +99,10 @@ class Database:
             "receiver": receiver,
         }
 
-        conversation = self.message.find(party, {"_id": 0})
+        try:
+            conversation = self.message.find(party, {"_id": 0})
+        except:
+            print("a")
 
         return list(conversation)
 
