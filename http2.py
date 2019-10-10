@@ -60,6 +60,7 @@ async def ws():
 
             database = db.Database()
 
+            # switch
             if message_json.get("type") == None:
                 await websocket.send("Invalid")
             else:
