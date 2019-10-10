@@ -9,7 +9,7 @@ from quart_cors import cors, route_cors, websocket_cors
 
 from db import db
 
-# create a Socket.IO server
+app = Quart(__name__)
 
 
 @app.route('/')
@@ -25,15 +25,15 @@ users = dict()
 def auth_required(func):
     @wraps(func)
     async def wrapper(*args, **kwargs):
+        if request.headers.get('Authorization') == None:
+            return Response(json.dumps({"error": "Bad request"}), 400)
+
         cred = request.headers['Authorization']
 
         if cred == None or len(cred.split("&")) != 2:
             return Response(json.dumps({"error": "Forbidden"}), 403)
 
-        try:
-            database = db.Database()
-        except Exception as e:
-            print(e)
+        database = db.Database()
 
         username, password = cred.split("&")
         isValidUser = database.check_valid_cred(username, password)

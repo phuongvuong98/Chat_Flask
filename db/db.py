@@ -19,7 +19,7 @@ class Singleton(type):
             cls._instances[cls] = super(
                 Singleton, cls).__call__(*args, **kwargs)
             connection = pymongo.MongoClient(
-                "mongodb+srv://3man:Admin123@c0-xeenv.mongodb.net/admin?retryWrites=true&w=majority", ssl=True, ssl_cert_reqs=ssl.CERT_NONE)
+                "mongodb+srv://3man:Admin123@c0-xeenv.mongodb.net/admin?retryWrites=true&w=majority", ssl=True, ssl_cert_reqs=ssl.CERT_NONE, connect=False)
             print("Init database connection")
             # creating database
             db = connection.chat
