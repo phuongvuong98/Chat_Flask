@@ -184,7 +184,6 @@ async def get_conversation():
     isValidUser = database.check_valid_cred(username, password)
 
     if isValidUser != "Success":
-        print(isValidUser)
         return Response(json.dumps({"error": "Forbidden"}), 403)
 
     result = database.show_conversation(username, receiver)
@@ -196,13 +195,28 @@ async def get_conversation():
 @route_cors(allow_origin="*")
 async def send_message():
     data = await request.get_json()
-    print(request.headers['Authorization'])
-    # party = data['party']
+
+    cred = request.headers['Authorization']
+
+    if cred == None or len(cred.split("&")) != 2:
+        print("a")
+        return Response(json.dumps({"error": "Forbidden"}), 403)
+
+    try:
+        database = db.Database()
+    except Exception as e:
+        print("***********************")
+        print(e)
+
+    username = cred.split("&")[0]
+    password = cred.split("&")[1]
+    isValidUser = database.check_valid_cred(username, password)
+
+    if isValidUser != "Success":
+        return Response(json.dumps({"error": "Forbidden"}), 403)
 
     receiver = data['receiver']
     content = data['content']
-
-    database = db.Database()
 
     result = database.add_message("luan", receiver, content)
 
