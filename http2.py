@@ -151,10 +151,17 @@ async def list_user():
 
     cred = request.headers['Authorization']
 
-    if cred == None:
+    if cred == None or len(cred.split("&")) != 2:
         return Response(json.dumps({"error": "Forbidden"}), 403)
 
     database = db.Database()
+
+    username = cred.split("&")[0]
+    password = cred.split("&")[1]
+    isValidUser = database.check_valid_cred(username, password)
+
+    if isValidUser != "Success":
+        return Response(json.dumps({"error": "Forbidden"}), 403)
 
     result = database.list_user()
 
@@ -170,7 +177,6 @@ async def get_conversation():
     cred = request.headers['Authorization']
 
     if cred == None or len(cred.split("&")) != 2:
-        print("a")
         return Response(json.dumps({"error": "Forbidden"}), 403)
 
     try:
@@ -218,7 +224,7 @@ async def send_message():
     receiver = data['receiver']
     content = data['content']
 
-    result = database.add_message("luan", receiver, content)
+    result = database.add_message(username, receiver, content)
 
     if result == "Success":
         return json.dumps({"status": "success"})
